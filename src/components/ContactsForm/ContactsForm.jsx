@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { contactsSelector } from 'redux/selectors';
+import { addContact } from 'redux/phonebookSlice';
 import { nanoid } from 'nanoid';
 import css from './ContactsForm.module.scss';
-import PropTypes from 'prop-types';
 
-const ContactsForm = function ({ addContact, existNames }) {
+const ContactsForm = function () {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+
+  const contactsList = useSelector(contactsSelector);
+  const dispatch = useDispatch();
+
+  const getExistNames = () => {
+    return contactsList.map(({ name }) => name);
+  };
 
   const handlerInputChange = event => {
     if (event.target.name === 'name') {
@@ -18,7 +27,8 @@ const ContactsForm = function ({ addContact, existNames }) {
 
   const handlerSubmitForm = event => {
     event.preventDefault();
-    if (!existNames().includes(name)) {
+
+    if (!getExistNames().includes(name)) {
       const newContact = {
         id: nanoid(5),
         name,
@@ -26,14 +36,14 @@ const ContactsForm = function ({ addContact, existNames }) {
       };
       setName('');
       setNumber('');
-      addContact(newContact);
+      dispatch(addContact(newContact));
     } else {
       window.alert(`${name} is already in contacts.`);
     }
   };
 
   return (
-    <form className={css.form} onSubmit={handlerSubmitForm}>
+    <form className={css.form} onSubmit={e => handlerSubmitForm(e)}>
       <label>
         Name
         <input
@@ -65,11 +75,6 @@ const ContactsForm = function ({ addContact, existNames }) {
       </button>
     </form>
   );
-};
-
-ContactsForm.propTypes = {
-  addContact: PropTypes.func.isRequired,
-  existNames: PropTypes.func.isRequired,
 };
 
 export default ContactsForm;
